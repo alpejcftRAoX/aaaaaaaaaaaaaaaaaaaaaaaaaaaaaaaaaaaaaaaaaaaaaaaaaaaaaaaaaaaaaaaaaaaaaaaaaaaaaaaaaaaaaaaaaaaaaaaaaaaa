@@ -78,6 +78,11 @@ class GameDrawing:
         s = drawing.comic_sans_big.render(str(int(c.get_fps())), True, (0, 255, 0, 30))
         self.w.blit(s, (0, 0))
 
+    def draw_inventory(self, inventory: dict):
+        if "bombs" in inventory and inventory["bombs"] != 0:
+            s = drawing.comic_sans_big.render(f"bombs: {inventory['bombs']}", True, (255, 30, 0, 30))
+            self.w.blit(s, (10, self.w.get_size()[1] - s.get_size()[1]))
+
     def draw_players(self, players: dict):
         for uuid, player in players.items():
             # tank = None
@@ -100,6 +105,7 @@ class GameDrawing:
             tank.score = player["score"]
             tank.health = player["health"]
             tank.max_health = player["max_health"]
+            tank.inventory = player["inventory"]
 
             tank.is_disappearing = player["is_disappearing"]
             tank.is_hit = player["is_hit"]
@@ -321,6 +327,8 @@ class Networking:
         elif j["type"] == "force_position":
             self.game.tanks[self.game.our_tank_uuid]["pos"] = j["payload"]
             self.game.our_tank.is_active = False
+        elif j["type"] == "inventory":
+            self.game.our_tank.inventory = j["payload"]
 
     def on_error(self, ws, error):
         self.ws_status = "WS_ERROR"

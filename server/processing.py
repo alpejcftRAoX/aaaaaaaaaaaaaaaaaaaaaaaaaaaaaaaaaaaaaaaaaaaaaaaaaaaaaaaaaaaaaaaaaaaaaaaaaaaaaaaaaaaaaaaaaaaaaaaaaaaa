@@ -6,6 +6,7 @@ import traceback
 import uuid
 
 import numpy as np
+import numpy.linalg
 
 import networking
 import tools
@@ -16,6 +17,7 @@ tank_colors = ([255, 232, 105, 255], [191, 174, 78, 255], [153, 153, 153, 255], 
                [133, 227, 125, 255], [85, 85, 85, 255])
 bullet_colors = ([0, 178, 225, 255], [0, 133, 168, 255])
 food_colors = ([255, 232, 105, 255], [191, 174, 78, 255])
+bomb_colors = ([255, 40, 40, 255], [191, 174, 78, 255])
 
 
 class Processing:
@@ -35,13 +37,23 @@ class Processing:
     def pack(self):
         return self.tanks | self.food | self.projectiles
 
-    async def spawn_food(self, pos, speed, radius, health, type_, class_):
+    async def explode(self, pos, parent):
+        for _, food in self.food.items():
+            if numpy.linalg.norm(numpy.array(pos) - food["pos"]) <= 1000:
+                await self.on_kill(food, parent)
+        for _, tank in self.tanks.items():
+            if tank["uuid"] != parent["uuid"]:
+                if numpy.linalg.norm(numpy.array(pos) - tank["pos"]) <= 1000:
+                    await self.on_kill(tank, parent)
+
+    async def spawn_food(self, pos, speed, radius, health, type_, class_, is_bomb):
         uuid_ = str(uuid.uuid4())
         self.food[uuid_] = {"uuid": uuid_, "type": type_, "class": class_, "pos": pos,
-                            "angle": random.randint(1, 360),
+                            "angle": random.randint(1, 360), "is_bomb": is_bomb,
                             "speed": speed, "rotation_speed": random.randint(5, 15) * random.choice([1, -1]),
                             "radius": radius, "health": health, "rotation": 0, "score": 10,
-                            "colors": food_colors, "is_hit": False, "is_disappearing": False, "animation_time": .15,
+                            "colors": food_colors if not is_bomb else bomb_colors, "is_hit": False,
+                            "is_disappearing": False, "animation_time": .15,
                             "current_animation_time": 0, "lifetime": 10, "last_time": time.time()}
 
     async def spawn_projectile(self, pos, angle, speed, radius, health, type_, class_, parent):
@@ -68,7 +80,7 @@ class Processing:
 
                              "tank_type": "default", "radius": 30, "is_hit": False, "is_disappearing": False,
                              "animation_time": .2, "current_animation_time": 0, "last_time": time.time(),
-                             "last_damage_time": 0, "heal_after_damage_time": 10}
+                             "last_damage_time": 0, "heal_after_damage_time": 10, "inventory": {"bombs": 1}}
         await self.remove_food_around([*self.tanks[uuid_]["pos"], self.tanks[uuid_]["radius"] + 10])
 
         if ws is not None:
@@ -276,6 +288,8 @@ class Processing:
                 t_uuid_ = None
             if t_uuid_ is not None and t_uuid_ in self.tanks:
                 self.tanks[t_uuid_]["score"] += obj_killed["score"]
+            if "is_bomb" in obj_killed and obj_killed["is_bomb"] and t_uuid_ is not None:
+                self.tanks[t_uuid_]["inventory"]["bombs"] += 1
         await self.disappear_obj(obj_killed)
 
     async def are_tanks_around(self, c2, radius_around):
@@ -325,9 +339,11 @@ class Processing:
                         success = False
                         while not success:
                             pos = [random.randint(0, self.world_size[0]), random.randint(0, self.world_size[1])]
-                            if not await self.are_food_around([*pos, food_radius], 4)\
+                            if not await self.are_food_around([*pos, food_radius], 4) \
                                     and not await self.are_tanks_around([*pos, food_radius], 60):
-                                await self.spawn_food(pos, random.randint(5, 10), food_radius, 4, "food", "square")
+                                is_bomb = random.random() < 0.1
+                                await self.spawn_food(pos, random.randint(5, 10), food_radius, 4 if not is_bomb else 20,
+                                                      "food", "square", is_bomb)
                                 success = True
                     print("[auto_spawn_food] Spawn food complete")
             except Exception as e:

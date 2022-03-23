@@ -92,13 +92,19 @@ class TankDefault:
         self.current_shooting_time = 0
         self.shoot = False
 
+        self.inventory = {}
+        self.explode = False
+
         self.display_stats = True
 
     def pack(self):
-        s = json.dumps({"pos": (self.pos).tolist(), "rotation": self.rotation,
-                        "current_shooting_time": self.current_shooting_time, "shoot": self.shoot})
+        s = json.dumps({"pos": self.pos.tolist(), "rotation": self.rotation,
+                        "current_shooting_time": self.current_shooting_time, "shoot": self.shoot,
+                        "explode": self.explode})
         if self.shoot:
             self.shoot = False
+        if self.explode:
+            self.explode = False
         return s
 
     def draw(self, surface):

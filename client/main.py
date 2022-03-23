@@ -43,6 +43,9 @@ class Processing:
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     self.game.our_tank.set_shooting_status(False)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    self.game.our_tank.explode = True
 
         mouse_pos = np.array(pygame.mouse.get_pos()) * self.game.scaling_k
         rotation = math.atan2(*self.game.our_tank.pos - drawing.drawing_offset - mouse_pos) * 180 / math.pi
@@ -85,6 +88,7 @@ class Processing:
         self.game.draw_projectiles(projectiles)
         self.game.draw_food(food)
         self.game.draw_players(tanks)
+        self.game.draw_inventory(self.game.our_tank.inventory)
         self.game.draw()
 
     async def process_loading_screen(self, events):

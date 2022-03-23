@@ -44,6 +44,13 @@ class Networking:
                         bullet_pos, j["rotation"], tank["bullet_speed"], tank["bullet_radius"], tank["bullet_damage"],
                         "projectile", "bullet", uuid_)
 
+                if j["explode"]:
+                    if self.processing.tanks[uuid_]["inventory"]["bombs"] > 0:
+                        self.processing.tanks[uuid_]["inventory"]["bombs"] -= 1
+                        await websocket.send(
+                            json.dumps({"type": "inventory", "payload": self.processing.tanks[uuid_]["inventory"]}))
+                        await self.processing.explode(self.processing.tanks[uuid_]["pos"], self.processing.tanks[uuid_])
+
                 await self.processing.update_tank(uuid_, j["pos"], j["rotation"], j["current_shooting_time"])
         except Exception as e:
             print("[serve_connection] client exception in main thread:", e)
