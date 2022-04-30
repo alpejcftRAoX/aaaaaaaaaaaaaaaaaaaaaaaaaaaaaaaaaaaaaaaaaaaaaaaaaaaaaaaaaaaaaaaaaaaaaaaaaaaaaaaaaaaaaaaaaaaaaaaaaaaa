@@ -70,7 +70,6 @@ class Processing:
         self.our_speed = np.clip(self.our_speed + cur_velocity * a, -self.max_speed, self.max_speed)
         self.game.our_tank.add_to_pos(*self.our_speed * a)
         if any(self.our_speed):
-            pass
             self.net.send_tank_data = True
         if self.game.our_tank.is_shooting or self.game.our_tank.current_shooting_time > 0:
             self.net.send_tank_data = True

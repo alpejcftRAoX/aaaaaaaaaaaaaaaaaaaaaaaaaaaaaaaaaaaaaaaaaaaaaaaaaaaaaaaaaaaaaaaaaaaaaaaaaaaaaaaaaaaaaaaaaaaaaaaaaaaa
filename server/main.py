@@ -11,7 +11,7 @@ if sys.version_info[1] < 9:
     exit(1)
 
 processing = processing.Processing(60, settings.food_amount, settings.map_dim)
-start_server = websockets.serve(processing.net.serve_connection, "", 2021)
+start_server = websockets.serve(processing.net.serve_connection, "", 2022)
 
 
 async def multiple_tasks():

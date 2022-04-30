@@ -342,7 +342,9 @@ class Processing:
                             if not await self.are_food_around([*pos, food_radius], 4) \
                                     and not await self.are_tanks_around([*pos, food_radius], 60):
                                 is_bomb = random.random() < 0.1
-                                await self.spawn_food(pos, random.randint(5, 10), food_radius, 4 if not is_bomb else 20,
+                                await self.spawn_food(pos, random.randint(5, 10),
+                                                      food_radius if not is_bomb else food_radius + 4,
+                                                      4 if not is_bomb else 20,
                                                       "food", "square", is_bomb)
                                 success = True
                     print("[auto_spawn_food] Spawn food complete")

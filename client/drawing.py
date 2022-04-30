@@ -132,6 +132,7 @@ class TextInput:
             self.box_colors = self.selected_box_colors.copy() if self.active else self.basic_box_colors.copy()
         self.last_time = t
 
+        # don't look at function name, it only draws text input field
         draw_progress_bar_alpha(surface, self.center, np.array(self.rect.size), 1, *self.box_colors,
                                 contour_thickness=4)
         rotate_surface_and_draw(surface, self.text_surface, 0, self.center)

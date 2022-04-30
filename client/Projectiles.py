@@ -2,6 +2,7 @@ import time
 import math
 
 import numpy as np
+import pygame
 
 import drawing
 
@@ -22,13 +23,13 @@ class ProjectileBullet:
         self.contour_thickness = 4
         self.colors = np.array([[0, 133, 168, 255], [0, 178, 225, 255]])
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         if self.lifetime < -self.disappear_time:
             return True
 
         if self.lifetime <= 0:
             k = 1 - abs(self.lifetime) / self.disappear_time
-            self.radius += 3 * 1 - k
+            self.radius += 3 * (1 - k)
             self.colors[0][3] *= k
             self.colors[1][3] *= k
 

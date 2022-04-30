@@ -168,7 +168,7 @@ class LoadingScreenDrawing:
         self.inputs: dict[str: drawing.TextInput] = \
             {"nickname": drawing.TextInput(self.game.center - [0, 40], np.array([300, 42]), label="Nickname (max 16):",
                                            max_length=16),
-             "server": drawing.TextInput(self.game.center + [0, 40], np.array([300, 42]), text="127.0.0.1:2021",
+             "server": drawing.TextInput(self.game.center + [0, 40], np.array([300, 42]), text="127.0.0.1:2022",
                                          label="Server (ip:port):", max_length=21)}
 
         # Generating background image
@@ -256,7 +256,8 @@ class LoadingScreenDrawing:
             s.blit(f, (0, self.game.w.get_rect().h - f.get_rect().h))
             return {**text_responses, "enter": enter}
         else:
-            drawing.draw_text_alpha(s, self.game.center-[0, 0], "Connecting...", (0, 0, 0, 100), (255, 255, 255, 255), drawing.comic_sans_big)
+            drawing.draw_text_alpha(s, self.game.center-[0, 0], "Connecting...", (0, 0, 0, 100), (255, 255, 255, 255),
+                                    drawing.comic_sans_big)
             return {"nickname": "", "server": "", "enter": False}
 
 
@@ -303,6 +304,16 @@ class Networking:
 
         if j["type"] == "uuid_change":
             self.game.our_tank_uuid = j["payload"]["uuid"]
+        elif j["type"] == "delete":
+            pass  # no need to handle as server sends us all items every server tick
+            # for uuid, a in j["payload"].items():
+            #     continue
+            #     if a["type"] == "tank":
+            #         del self.game.tanks[uuid]
+            #     elif a["type"] == "food":
+            #         del self.game.food[uuid]
+            #     elif a["type"] == "projectile":
+            #         del self.game.projectiles[uuid]
         elif j["type"] == "items" or j["type"] == "all_items":
             tanks = {}
             food = {}
